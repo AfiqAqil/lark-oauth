@@ -19,11 +19,12 @@ router = APIRouter()
 async def lark_login():
     """Redirect to Lark authorization page."""
     auth_url = (
-        f"{settings.LARK_BASE_URL}/authen/v1/authorize"
+        f"{settings.LARK_AUTH_BASE_URL}/authen/v1/authorize"
         f"?app_id={settings.LARK_APP_ID}"
         f"&redirect_uri={settings.REDIRECT_URI}"
         f"&response_type=code"
     )
+    logger.info(f"Redirecting to Lark auth URL: {auth_url}")
     return RedirectResponse(url=auth_url)
 
 

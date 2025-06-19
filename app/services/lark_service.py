@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 async def get_app_access_token() -> str:
     """Get an app access token from Lark."""
     try:
-        url = f"{settings.LARK_BASE_URL}/auth/v3/app_access_token/internal"
+        url = f"{settings.LARK_API_BASE_URL}/auth/v3/app_access_token/internal"
         payload = {
             "app_id": settings.LARK_APP_ID,
             "app_secret": settings.LARK_APP_SECRET
@@ -50,7 +50,7 @@ async def get_user_access_token(code: str) -> Dict[str, Any]:
     """Exchange authorization code for user access token."""
     try:
         app_access_token = await get_app_access_token()
-        url = f"{settings.LARK_BASE_URL}/authen/v1/oidc/access_token"
+        url = f"{settings.LARK_API_BASE_URL}/authen/v1/oidc/access_token"
         headers = {"Authorization": f"Bearer {app_access_token}"}
         payload = {
             "grant_type": "authorization_code",
@@ -99,7 +99,7 @@ async def get_user_access_token(code: str) -> Dict[str, Any]:
 async def get_user_info(access_token: str) -> Dict[str, Any]:
     """Get user information using the access token."""
     try:
-        url = f"{settings.LARK_BASE_URL}/authen/v1/user_info"
+        url = f"{settings.LARK_API_BASE_URL}/authen/v1/user_info"
         headers = {"Authorization": f"Bearer {access_token}"}
         
         async with httpx.AsyncClient() as client:
@@ -136,7 +136,7 @@ async def refresh_access_token(refresh_token: str) -> Dict[str, Any]:
     """Refresh the access token using a refresh token."""
     try:
         app_access_token = await get_app_access_token()
-        url = f"{settings.LARK_BASE_URL}/authen/v1/oidc/refresh_access_token"
+        url = f"{settings.LARK_API_BASE_URL}/authen/v1/oidc/refresh_access_token"
         headers = {"Authorization": f"Bearer {app_access_token}"}
         payload = {
             "grant_type": "refresh_token",

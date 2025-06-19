@@ -4,12 +4,12 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Lark OAuth Integration"
-    API_V1_STR: str = "/api/v1"
-    
+
     # Lark OAuth settings
     LARK_APP_ID: str
     LARK_APP_SECRET: str
-    LARK_BASE_URL: str = "https://open.larksuite.com"
+    LARK_API_BASE_URL: str = "https://open.larksuite.com/open-apis"
+    LARK_AUTH_BASE_URL: str = "https://accounts.larksuite.com/open-apis"
     REDIRECT_URI: str
     
     # Database settings (if needed)
