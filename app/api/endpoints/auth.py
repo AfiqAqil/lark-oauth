@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, status, Query
 from fastapi.responses import RedirectResponse
-import logging
 import os
 
 from app.core.config import settings
+from app.core.logger import logger
 from app.services.lark_service import (
     get_user_access_token,
     get_user_info,
@@ -11,7 +11,6 @@ from app.services.lark_service import (
     refresh_access_token
 )
 
-logger = logging.getLogger(__name__)
 router = APIRouter()
 
 

@@ -1,9 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
-import logging
 
 from app.core.models import users_db, auth_db
+from app.core.logger import logger
 
-logger = logging.getLogger(__name__)
 router = APIRouter()
 
 

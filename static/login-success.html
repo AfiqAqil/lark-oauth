@@ -10,9 +10,11 @@
 <body>
     <div class="container">
         <div class="login-container">
-            <h1>Login Successful</h1>
+            <h1>✅ Login Successful!</h1>
+            <p>Great! Your Lark OAuth authentication was successful. Here's your profile information:</p>
+            
             <div id="userInfo" class="user-info">
-                <h2>User Information</h2>
+                <h2>👤 User Information</h2>
                 <div id="avatarContainer"></div>
                 <div class="info-row">
                     <div class="label">Name:</div>
@@ -26,9 +28,20 @@
                     <div class="label">User ID:</div>
                     <div id="userId"></div>
                 </div>
-                <button id="logoutBtn" class="logout-button">Logout</button>
+                
+                <div class="token-info">
+                    <h3>🔐 Authentication Details</h3>
+                    <p><small>✅ Access token obtained and stored securely<br>
+                    🔄 Token will auto-refresh when needed<br>
+                    📱 Session will persist across browser sessions</small></p>
+                </div>
+                
+                <div class="actions">
+                    <button id="logoutBtn" class="logout-button">🚪 Logout</button>
+                    <a href="/" class="back-button">🏠 Back to Home</a>
+                </div>
             </div>
-            <p id="loadingMessage">Loading user information...</p>
+            <p id="loadingMessage">⏳ Loading user information...</p>
         </div>
     </div>
 

@@ -1,13 +1,11 @@
 from datetime import datetime, timedelta
 from typing import Dict, Any
 import httpx
-import logging
 from fastapi import HTTPException, status
 
 from app.core.config import settings
 from app.core.models import User, UserAuth, users_db, auth_db
-
-logger = logging.getLogger(__name__)
+from app.core.logger import logger
 
 
 async def get_app_access_token() -> str:

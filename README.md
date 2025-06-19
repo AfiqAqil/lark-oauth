@@ -2,6 +2,16 @@
 
 A simple FastAPI application for demonstrating Lark (Feishu) OAuth 2.0 authentication.
 
+## ✨ Quick Start
+
+**One command to start everything:**
+
+```bash
+python run.py
+```
+
+That's it! 🚀 The script will start both frontend and backend servers automatically.
+
 ## Project Structure
 
 ```
@@ -64,69 +74,50 @@ pip install -r requirements/dev.txt
 
 4. **Create a .env file**
 
-Create a `.env` file in the root directory with the following content:
+Copy the example environment file and fill in your Lark app credentials:
 
-```
-# Application settings
-BACKEND_CORS_ORIGINS="http://localhost:3000,http://127.0.0.1:3000"
-FRONTEND_URL="http://localhost:3000"
-
-# Lark OAuth settings
-LARK_APP_ID="your_lark_app_id_here"
-LARK_APP_SECRET="your_lark_app_secret_here"
-LARK_BASE_URL="https://open.larksuite.com"
-REDIRECT_URI="http://localhost:8000/api/auth/user/lark/callback"
+```bash
+cp .env.example .env
 ```
 
-Replace `your_lark_app_id_here` and `your_lark_app_secret_here` with your actual Lark application credentials.
+Then edit `.env` and replace the placeholder values:
+- `LARK_APP_ID` - Your Lark App ID from the developer console
+- `LARK_APP_SECRET` - Your Lark App Secret from the developer console
+
+💡 **Tip**: The `.env.example` file contains detailed setup instructions for the Lark Developer Console.
 
 5. **Configure your Lark application**
 
-In your Lark developer console:
+In your Lark developer console (detailed instructions in `.env.example`):
 - Add the redirect URI: `http://localhost:8000/api/auth/user/lark/callback`
 - Enable the required permissions:
-  - Read basic information of the user
-  - Get user email
+  - `contact:user.id:readonly` - Get user ID
+  - `contact:user.email:readonly` - Get user email
+  - `contact:user.avatar:readonly` - Get user avatar
 
 ## Running the Application
 
-You can run the application in two different ways:
-
-### Option 1: Single Instance (Backend + Frontend)
+### 🎯 Recommended: Single Command Start
 
 ```bash
-# Start the FastAPI server with static file mounting
-python -m app.main
+python run.py
 ```
 
-Access the application at `http://localhost:8000/static/index.html`
+This starts both frontend and backend servers automatically:
+- 📱 **Frontend**: http://localhost:3000
+- 🔧 **Backend**: http://localhost:8000  
+- 📚 **API Docs**: http://localhost:8000/docs
 
-### Option 2: Separate Instances (Recommended)
+### Alternative: Manual Start (Advanced Users)
 
-1. **Start the Backend Server**
+If you prefer to run servers separately:
 
 ```bash
-# Using the helper script
+# Terminal 1: Backend
 python -m scripts.run_backend
 
-# Or directly with uvicorn
-uvicorn app.main:app --host localhost --port 8000 --reload
-```
-
-2. **Start the Frontend Server**
-
-```bash
-# Using the helper script
+# Terminal 2: Frontend  
 python -m scripts.run_frontend
-
-# By default, the frontend runs on port 3000
-```
-
-3. **Access the application**
-
-Open your browser and navigate to:
-```
-http://localhost:3000
 ```
 
 ## API Endpoints
@@ -153,6 +144,70 @@ The application handles various errors, including:
 - Expired tokens
 - Network errors
 - Missing user information
+
+## 🎯 Project Goals & Features
+
+This project demonstrates a complete Lark OAuth integration with the following features:
+
+### ✅ **Single Command Startup**
+- **Goal**: Only requires one main script to start frontend and backend
+- **Solution**: `python run.py` starts both servers automatically
+- **Benefits**: Simplified development workflow, no need to manage multiple terminals
+
+### ✅ **Developer-Friendly Setup**
+- **Goal**: Guide developers on how to setup Lark OAuth (including code)
+- **Solution**: Comprehensive `.env.example` with step-by-step Lark console setup
+- **Benefits**: Clear instructions reduce setup time and confusion
+
+### ✅ **Clean Frontend with Guidance**
+- **Goal**: Simple yet clean frontend with helpful guidance
+- **Solution**: Modern UI with explanations, emojis, and clear user flow
+- **Benefits**: Users understand what's happening during OAuth flow
+
+### ✅ **Up-to-Date Documentation**
+- **Goal**: README is comprehensive and current
+- **Solution**: Restructured README with quick start, detailed setup, and troubleshooting
+- **Benefits**: Developers can get started quickly and find help when needed
+
+## 🚀 What You Get
+
+- **Complete OAuth 2.0 Flow**: Authorization code flow with PKCE
+- **Token Management**: Automatic refresh and secure storage
+- **Error Handling**: Comprehensive error handling with user-friendly messages
+- **Modern UI**: Clean, responsive interface with helpful guidance
+- **Developer Experience**: One-command startup with beautiful colored logging (loguru)
+- **Production Ready**: Proper error handling, file logging, and security practices
+
+## 📚 API Endpoints
+
+- `GET /api/auth/user/lark/login` - Redirects to Lark for authentication
+- `GET /api/auth/user/lark/callback` - Handles the callback from Lark
+- `POST /api/auth/user/lark/refresh` - Refreshes the access token
+- `GET /api/user/{user_id}` - Gets user information by ID
+- `GET /docs` - Interactive API documentation (Swagger UI)
+
+## 🔧 Troubleshooting
+
+**Common Issues:**
+
+1. **"Failed to get app access token"**
+   - Check your `LARK_APP_ID` and `LARK_APP_SECRET` in `.env`
+   - Ensure credentials are from the correct Lark app
+
+2. **"Redirect URI mismatch"**
+   - Verify redirect URI in Lark console matches: `http://localhost:8000/api/auth/user/lark/callback`
+
+3. **"Permission denied"**
+   - Enable required permissions in Lark console (see `.env.example` for details)
+
+4. **Frontend not loading**
+   - Ensure you're running from the project root directory
+   - Check that `static/` directory exists
+
+5. **Need more debugging info?**
+   - Check the `logs/lark_oauth.log` file for detailed debug information
+   - Logs are automatically rotated (10MB max, 7 days retention)
+   - Console output shows colored, real-time logging with loguru
 
 ## License
 
