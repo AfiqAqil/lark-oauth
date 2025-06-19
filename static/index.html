@@ -3,36 +3,458 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lark OAuth Integration</title>
+    <title>Lark OAuth Setup Guide</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <script src="scripts/config.js"></script>
 </head>
 <body>
     <div class="container">
-        <div class="login-container">
-            <h1>🚀 Lark OAuth Integration</h1>
-            <p>This demo shows how to integrate Lark (Feishu) OAuth 2.0 authentication with your application.</p>
-            
-            <div class="info-section">
-                <h3>✨ What happens when you login:</h3>
-                <ul>
-                    <li>🔐 Secure OAuth 2.0 authentication with Lark</li>
-                    <li>👤 Retrieve your user profile information</li>
-                    <li>🔄 Automatic token refresh handling</li>
-                    <li>🎯 Redirect to success page with your details</li>
-                </ul>
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🚀 Lark OAuth Integration Guide</h1>
+                <p class="subtitle">Complete setup guide for developers to integrate Lark OAuth 2.0 authentication</p>
             </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="setup">📋 Setup Guide</button>
+            <button class="tab-btn" data-tab="backend">⚙️ Backend Code</button>
+            <button class="tab-btn" data-tab="frontend">🎨 Frontend Code</button>
+            <button class="tab-btn" data-tab="flow">🔄 OAuth Flow</button>
+            <button class="tab-btn" data-tab="demo">🧪 Live Demo</button>
+        </nav>
+
+        <!-- Setup Guide Tab -->
+        <div id="setup" class="tab-content active">
+            <div class="section">
+                <h2>🏗️ Lark App Setup Requirements</h2>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Create Lark Developer Account</h3>
+                            <p>Visit <a href="https://open.larksuite.com/app?lang=en-US" target="_blank">Lark Developer Console</a> and create an account</p>
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Create New Application</h3>
+                            <ul>
+                                <li>Click "Create App" in the developer console</li>
+                                <li>Choose "Custom App" → "Web App"</li>
+                                <li>Fill in app name and description</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>Configure OAuth Settings</h3>
+                            <div class="config-box">
+                                <h4>🔗 Redirect URI (Security Settings)</h4>
+                                <code class="inline-code">http://localhost:8000/api/auth/user/lark/callback</code>
+                                
+                                <h4>🔐 Required Permissions (Permissions & Scopes)</h4>
+                                <ul>
+                                    <li><code>contact:user.id:readonly</code> - Get user ID</li>
+                                    <li><code>contact:user.email:readonly</code> - Get user email</li>
+                                    <li><code>contact:user.avatar:readonly</code> - Get user avatar</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h3>Get App Credentials</h3>
+                            <p>Copy your <strong>App ID</strong> and <strong>App Secret</strong> from the Credentials & Basic Info</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="env-setup">
+                    <h3>🔧 Environment Configuration</h3>
+                    <p>Create a <code>.env</code> file in your project root:</p>
+                    <pre><code class="language-bash"># Lark OAuth Configuration
+LARK_APP_ID=your_app_id_here
+LARK_APP_SECRET=your_app_secret_here
+REDIRECT_URI=http://localhost:8000/api/auth/user/lark/callback
+
+# Optional: Database URL
+DATABASE_URL=sqlite:///./lark_oauth.db</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Backend Code Tab -->
+        <div id="backend" class="tab-content">
+            <div class="section">
+                <h2>⚙️ Backend Implementation</h2>
+                
+                <div class="code-section">
+                    <h3>📁 Project Structure</h3>
+                    <pre><code class="language-text">app/
+├── api/
+│   ├── endpoints/
+│   │   ├── auth.py      # OAuth endpoints
+│   │   └── user.py      # User endpoints
+│   └── router.py        # API router
+├── core/
+│   ├── config.py        # Settings
+│   └── models.py        # Data models
+├── services/
+│   └── lark_service.py  # Lark API service
+└── main.py              # FastAPI app</code></pre>
+                </div>
+
+                <div class="code-section">
+                    <h3>🔐 Auth Endpoints (auth.py)</h3>
+                    <pre><code class="language-python">from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import RedirectResponse
+from app.core.config import settings
+from app.services.lark_service import get_user_access_token, get_user_info
+
+router = APIRouter()
+
+@router.get("/lark/login")
+async def lark_login():
+    """Redirect to Lark authorization page."""
+    auth_url = (
+        f"{settings.LARK_AUTH_BASE_URL}/authen/v1/authorize"
+        f"?app_id={settings.LARK_APP_ID}"
+        f"&redirect_uri={settings.REDIRECT_URI}"
+        f"&response_type=code"
+    )
+    return RedirectResponse(url=auth_url)
+
+@router.get("/lark/callback")
+async def lark_callback(code: str = Query(...)):
+    """Handle Lark callback with authorization code."""
+    try:
+        # Exchange code for access token
+        token_data = await get_user_access_token(code)
+        
+        # Get user info
+        user_info = await get_user_info(token_data["access_token"])
+        
+        # Redirect to success page
+        return RedirectResponse(url=f"/login-success.html?userId={user_info['id']}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))</code></pre>
+                </div>
+
+                <div class="code-section">
+                    <h3>⚙️ Configuration (config.py)</h3>
+                    <pre><code class="language-python">from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    PROJECT_NAME: str = "Lark OAuth Integration"
+    
+    # Lark OAuth settings
+    LARK_APP_ID: str
+    LARK_APP_SECRET: str
+    LARK_API_BASE_URL: str = "https://open.larksuite.com/open-apis"
+    LARK_AUTH_BASE_URL: str = "https://accounts.larksuite.com/open-apis"
+    REDIRECT_URI: str
+    
+    class Config:
+        env_file = ".env"
+        case_sensitive = True
+
+settings = Settings()</code></pre>
+                </div>
+
+                <div class="code-section">
+                    <h3>🔧 Lark Service (lark_service.py)</h3>
+                    <pre><code class="language-python">import httpx
+from app.core.config import settings
+
+async def get_user_access_token(code: str):
+    """Exchange authorization code for access token."""
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{settings.LARK_AUTH_BASE_URL}/authen/v1/access_token",
+            json={
+                "grant_type": "authorization_code",
+                "code": code,
+                "app_id": settings.LARK_APP_ID,
+                "app_secret": settings.LARK_APP_SECRET
+            }
+        )
+        return response.json()
+
+async def get_user_info(access_token: str):
+    """Get user information using access token."""
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{settings.LARK_API_BASE_URL}/authen/v1/user_info",
+            headers={"Authorization": f"Bearer {access_token}"}
+        )
+        return response.json().get("data", {})</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Frontend Code Tab -->
+        <div id="frontend" class="tab-content">
+            <div class="section">
+                <h2>🎨 Frontend Implementation</h2>
+                
+                <div class="code-section">
+                    <h3>🏠 HTML Structure</h3>
+                    <pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Lark OAuth Login&lt;/title&gt;
+    &lt;link rel="stylesheet" href="styles.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class="login-container"&gt;
+        &lt;h1&gt;🚀 Login with Lark&lt;/h1&gt;
+        &lt;button id="larkLoginBtn" class="login-button"&gt;
+            🔑 Authenticate with Lark
+        &lt;/button&gt;
+    &lt;/div&gt;
+    &lt;script src="scripts/auth.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                </div>
+
+                <div class="code-section">
+                    <h3>🎯 JavaScript (auth.js)</h3>
+                    <pre><code class="language-javascript">document.addEventListener('DOMContentLoaded', () => {
+    const loginButton = document.getElementById('larkLoginBtn');
+    const backendUrl = window.BACKEND_URL || 'http://localhost:8000';
+    
+    // Check if already authenticated
+    const authData = localStorage.getItem('larkAuthData');
+    if (authData) {
+        try {
+            const parsedData = JSON.parse(authData);
+            const expiresAt = new Date(parsedData.expires_at);
             
-            <button id="larkLoginBtn" class="login-button">
-                <span>🔑 Login with Lark</span>
-            </button>
-            
-            <div class="help-section">
-                <p><small>💡 <strong>Need help?</strong> Check the README.md for setup instructions or visit the <a href="/docs" target="_blank">API documentation</a>.</small></p>
+            if (expiresAt > new Date()) {
+                window.location.href = '/login-success.html';
+                return;
+            } else {
+                localStorage.removeItem('larkAuthData');
+                localStorage.removeItem('larkUserData');
+            }
+        } catch (error) {
+            console.error('Error parsing auth data:', error);
+            localStorage.removeItem('larkAuthData');
+        }
+    }
+    
+    // Login button handler
+    loginButton.addEventListener('click', () => {
+        window.location.href = `${backendUrl}/api/auth/user/lark/login`;
+    });
+});</code></pre>
+                </div>
+
+                <div class="code-section">
+                    <h3>🎨 CSS Styling</h3>
+                    <pre><code class="language-css">/* Dark theme variables */
+:root {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2d2d;
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --accent: #00d4ff;
+    --accent-hover: #00b8e6;
+}
+
+body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.login-button {
+    background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.login-button:hover {
+    transform: translateY(-2px);
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- OAuth Flow Tab -->
+        <div id="flow" class="tab-content">
+            <div class="section">
+                <h2>🔄 OAuth 2.0 Flow Diagram</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <div class="flow-icon">👤</div>
+                        <div class="flow-content">
+                            <h3>1. User Initiates Login</h3>
+                            <p>User clicks "Login with Lark" button on your website</p>
+                        </div>
+                        <div class="flow-arrow">↓</div>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="flow-icon">🔄</div>
+                        <div class="flow-content">
+                            <h3>2. Redirect to Lark</h3>
+                            <p>Frontend redirects to <code>/api/auth/user/lark/login</code><br>
+                            Backend redirects to Lark authorization server</p>
+                        </div>
+                        <div class="flow-arrow">↓</div>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="flow-icon">🔐</div>
+                        <div class="flow-content">
+                            <h3>3. User Authorizes</h3>
+                            <p>User logs in to Lark and grants permissions to your app</p>
+                        </div>
+                        <div class="flow-arrow">↓</div>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="flow-icon">🎫</div>
+                        <div class="flow-content">
+                            <h3>4. Authorization Code</h3>
+                            <p>Lark redirects back to your callback URL with authorization code</p>
+                        </div>
+                        <div class="flow-arrow">↓</div>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="flow-icon">🔑</div>
+                        <div class="flow-content">
+                            <h3>5. Exchange for Token</h3>
+                            <p>Backend exchanges authorization code for access token</p>
+                        </div>
+                        <div class="flow-arrow">↓</div>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="flow-icon">👤</div>
+                        <div class="flow-content">
+                            <h3>6. Get User Info</h3>
+                            <p>Backend uses access token to fetch user information from Lark API</p>
+                        </div>
+                        <div class="flow-arrow">↓</div>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="flow-icon">✅</div>
+                        <div class="flow-content">
+                            <h3>7. Login Success</h3>
+                            <p>User is redirected to success page with their profile information</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="technical-details">
+                    <h3>🔧 Technical Implementation Details</h3>
+                    <div class="detail-grid">
+                        <div class="detail-card">
+                            <h4>🌐 Authorization URL</h4>
+                            <code>https://accounts.larksuite.com/open-apis/authen/v1/authorize</code>
+                        </div>
+                        <div class="detail-card">
+                            <h4>🔑 Token Exchange</h4>
+                            <code>https://accounts.larksuite.com/open-apis/authen/v1/access_token</code>
+                        </div>
+                        <div class="detail-card">
+                            <h4>👤 User Info</h4>
+                            <code>https://open.larksuite.com/open-apis/authen/v1/user_info</code>
+                        </div>
+                        <div class="detail-card">
+                            <h4>🔄 Token Refresh</h4>
+                            <code>https://accounts.larksuite.com/open-apis/authen/v1/refresh_access_token</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo Tab -->
+        <div id="demo" class="tab-content">
+            <div class="section">
+                <h2>🧪 Live Demo</h2>
+                <div class="demo-container">
+                    <div class="demo-info">
+                        <h3>✨ What happens when you login:</h3>
+                        <ul>
+                            <li>🔐 Secure OAuth 2.0 authentication with Lark</li>
+                            <li>👤 Retrieve your user profile information</li>
+                            <li>🔄 Automatic token refresh handling</li>
+                            <li>🎯 Redirect to success page with your details</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="demo-action">
+                        <button id="larkLoginBtn" class="demo-login-button">
+                            <span class="button-icon">🔑</span>
+                            <span>Login with Lark</span>
+                        </button>
+                    </div>
+                    
+                    <div class="demo-help">
+                        <p><small>💡 <strong>Need help?</strong> Check the setup guide above or visit the <a href="/docs" target="_blank">API documentation</a>.</small></p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="scripts/auth.js"></script>
+    <script>
+        // Tab switching functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetTab = btn.getAttribute('data-tab');
+                    
+                    // Remove active class from all tabs and contents
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding content
+                    btn.classList.add('active');
+                    document.getElementById(targetTab).classList.add('active');
+                });
+            });
+        });
+    </script>
 </body>
 </html> 

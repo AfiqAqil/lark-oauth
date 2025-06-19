@@ -3,48 +3,596 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Success - Lark OAuth Integration</title>
+    <title>Login Successful - Lark OAuth</title>
     <link rel="stylesheet" href="styles.css">
     <script src="scripts/config.js"></script>
 </head>
 <body>
     <div class="container">
-        <div class="login-container">
-            <h1>✅ Login Successful!</h1>
-            <p>Great! Your Lark OAuth authentication was successful. Here's your profile information:</p>
-            
-            <div id="userInfo" class="user-info">
-                <h2>👤 User Information</h2>
-                <div id="avatarContainer"></div>
-                <div class="info-row">
-                    <div class="label">Name:</div>
-                    <div id="userName"></div>
-                </div>
-                <div class="info-row">
-                    <div class="label">Email:</div>
-                    <div id="userEmail"></div>
-                </div>
-                <div class="info-row">
-                    <div class="label">User ID:</div>
-                    <div id="userId"></div>
+        <div class="success-container">
+            <div class="success-header">
+                <div class="success-icon">✅</div>
+                <h1>Login Successful!</h1>
+                <p class="success-subtitle">You have successfully authenticated with Lark OAuth 2.0</p>
+            </div>
+
+            <div class="user-profile" id="userProfile" style="display: none;">
+                <div class="profile-header">
+                    <img id="userAvatar" class="profile-avatar" src="" alt="User Avatar">
+                    <div class="profile-info">
+                        <h2 id="userName">Loading...</h2>
+                        <p id="userEmail" class="profile-email">Loading...</p>
+                    </div>
                 </div>
                 
-                <div class="token-info">
-                    <h3>🔐 Authentication Details</h3>
-                    <p><small>✅ Access token obtained and stored securely<br>
-                    🔄 Token will auto-refresh when needed<br>
-                    📱 Session will persist across browser sessions</small></p>
-                </div>
-                
-                <div class="actions">
-                    <button id="logoutBtn" class="logout-button">🚪 Logout</button>
-                    <a href="/" class="back-button">🏠 Back to Home</a>
+                <div class="profile-details">
+                    <h3>📋 Profile Information</h3>
+                    <div class="detail-row">
+                        <span class="detail-label">User ID:</span>
+                        <span id="userId" class="detail-value">Loading...</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Email:</span>
+                        <span id="userEmailDetail" class="detail-value">Loading...</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Login Time:</span>
+                        <span id="loginTime" class="detail-value">Loading...</span>
+                    </div>
                 </div>
             </div>
-            <p id="loadingMessage">⏳ Loading user information...</p>
+
+            <div class="token-section" id="tokenSection" style="display: none;">
+                <h3>🔑 Authentication Tokens</h3>
+                <div class="token-info">
+                    <div class="token-row">
+                        <span class="token-label">Access Token:</span>
+                        <span id="accessToken" class="token-value">Loading...</span>
+                        <button class="copy-btn" onclick="copyToClipboard('accessToken')">📋</button>
+                    </div>
+                    <div class="token-row">
+                        <span class="token-label">Expires At:</span>
+                        <span id="tokenExpiry" class="token-value">Loading...</span>
+                    </div>
+                    <div class="token-row">
+                        <span class="token-label">Refresh Token:</span>
+                        <span id="refreshToken" class="token-value">Loading...</span>
+                        <button class="copy-btn" onclick="copyToClipboard('refreshToken')">📋</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="success-actions">
+                <button id="toggleTokens" class="secondary-btn">🔍 Show Tokens</button>
+                <button id="refreshTokenBtn" class="secondary-btn">🔄 Refresh Token</button>
+                <button id="logoutBtn" class="danger-btn">🚪 Logout</button>
+            </div>
+
+            <div class="integration-info">
+                <h3>🛠️ Next Steps for Integration</h3>
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-icon">🔐</div>
+                        <h4>Store Tokens Securely</h4>
+                        <p>Save access and refresh tokens in secure storage (encrypted database, secure cookies)</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-icon">🔄</div>
+                        <h4>Implement Token Refresh</h4>
+                        <p>Set up automatic token refresh before expiration using the refresh token</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-icon">🛡️</div>
+                        <h4>Add Error Handling</h4>
+                        <p>Handle token expiration, network errors, and user permission changes</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-icon">📊</div>
+                        <h4>Use Lark APIs</h4>
+                        <p>Make authenticated requests to Lark APIs using the access token</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="api-examples">
+                <h3>📚 API Usage Examples</h3>
+                <div class="code-example">
+                    <h4>Making Authenticated Requests</h4>
+                    <pre><code class="language-javascript">// Example: Get user info
+const response = await fetch('https://open.larksuite.com/open-apis/authen/v1/user_info', {
+    headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+    }
+});
+
+const userData = await response.json();</code></pre>
+                </div>
+                
+                <div class="code-example">
+                    <h4>Token Refresh Implementation</h4>
+                    <pre><code class="language-javascript">// Example: Refresh access token
+const refreshResponse = await fetch('/api/auth/user/lark/refresh', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        refresh_token: refreshToken
+    })
+});
+
+const newTokens = await refreshResponse.json();</code></pre>
+                </div>
+            </div>
         </div>
     </div>
 
     <script src="scripts/user.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('userId');
+            const backendUrl = window.BACKEND_URL || 'http://localhost:8000';
+            
+            // Load user data
+            await loadUserData(userId);
+            
+            // Toggle tokens visibility
+            document.getElementById('toggleTokens').addEventListener('click', () => {
+                const tokenSection = document.getElementById('tokenSection');
+                const toggleBtn = document.getElementById('toggleTokens');
+                
+                if (tokenSection.style.display === 'none') {
+                    tokenSection.style.display = 'block';
+                    toggleBtn.textContent = '🙈 Hide Tokens';
+                } else {
+                    tokenSection.style.display = 'none';
+                    toggleBtn.textContent = '🔍 Show Tokens';
+                }
+            });
+            
+            // Refresh token
+            document.getElementById('refreshTokenBtn').addEventListener('click', async () => {
+                const authData = localStorage.getItem('larkAuthData');
+                if (authData) {
+                    try {
+                        const parsedData = JSON.parse(authData);
+                        
+                        if (!parsedData.refresh_token) {
+                            showMessage('❌ No refresh token available', 'error');
+                            return;
+                        }
+                        
+                        console.log('Refreshing token with:', { refresh_token: parsedData.refresh_token.substring(0, 10) + '...' });
+                        
+                        const response = await fetch(`${backendUrl}/api/auth/user/lark/refresh`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                refresh_token: parsedData.refresh_token
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            const newTokens = await response.json();
+                            localStorage.setItem('larkAuthData', JSON.stringify(newTokens));
+                            updateTokenDisplay(newTokens);
+                            showMessage('✅ Token refreshed successfully!', 'success');
+                        } else {
+                            const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+                            console.error('Refresh token error:', errorData);
+                            showMessage(`❌ Failed to refresh token: ${errorData.detail || 'Unknown error'}`, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Error refreshing token:', error);
+                        showMessage('❌ Error refreshing token', 'error');
+                    }
+                } else {
+                    showMessage('❌ No authentication data found', 'error');
+                }
+            });
+            
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                localStorage.removeItem('larkAuthData');
+                localStorage.removeItem('larkUserData');
+                window.location.href = '/';
+            });
+        });
+        
+        async function loadUserData(userId) {
+            try {
+                const authData = localStorage.getItem('larkAuthData');
+                const userData = localStorage.getItem('larkUserData');
+                
+                if (userData) {
+                    const parsedUserData = JSON.parse(userData);
+                    displayUserInfo(parsedUserData);
+                }
+                
+                if (authData) {
+                    const parsedAuthData = JSON.parse(authData);
+                    updateTokenDisplay(parsedAuthData);
+                }
+                
+                document.getElementById('userProfile').style.display = 'block';
+                document.getElementById('loginTime').textContent = new Date().toLocaleString();
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showMessage('❌ Error loading user data', 'error');
+            }
+        }
+        
+        function displayUserInfo(userData) {
+            document.getElementById('userName').textContent = userData.name || 'N/A';
+            document.getElementById('userEmail').textContent = userData.email || 'N/A';
+            document.getElementById('userEmailDetail').textContent = userData.email || 'N/A';
+            document.getElementById('userId').textContent = userData.user_id || 'N/A';
+            
+            if (userData.avatar_url) {
+                document.getElementById('userAvatar').src = userData.avatar_url;
+            } else {
+                document.getElementById('userAvatar').src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IiMwMGQ0ZmYiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xMiAxMmMtMi4yMSAwLTQtMS43OS00LTRzMS43OS00IDQtNCA0IDEuNzkgNCA0LTEuNzkgNC00IDR6bTAgMmM0LjQyIDAgOCAzLjU4IDggOHYySDR2LTJjMC00LjQyIDMuNTgtOCA4LTh6Ii8+Cjwvc3ZnPgo8L3N2Zz4K';
+            }
+        }
+        
+        function updateTokenDisplay(authData) {
+            document.getElementById('accessToken').textContent = authData.access_token ? 
+                authData.access_token.substring(0, 20) + '...' : 'N/A';
+            document.getElementById('refreshToken').textContent = authData.refresh_token ? 
+                authData.refresh_token.substring(0, 20) + '...' : 'N/A';
+            document.getElementById('tokenExpiry').textContent = authData.expires_at ? 
+                new Date(authData.expires_at).toLocaleString() : 'N/A';
+        }
+        
+        function copyToClipboard(elementId) {
+            const authData = localStorage.getItem('larkAuthData');
+            if (authData) {
+                const parsedData = JSON.parse(authData);
+                const text = elementId === 'accessToken' ? parsedData.access_token : parsedData.refresh_token;
+                
+                navigator.clipboard.writeText(text).then(() => {
+                    showMessage('📋 Copied to clipboard!', 'success');
+                }).catch(() => {
+                    showMessage('❌ Failed to copy', 'error');
+                });
+            }
+        }
+        
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 1000;
+                animation: slideIn 0.3s ease-out;
+                background: ${type === 'success' ? 'var(--success)' : 'var(--error)'};
+            `;
+            
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+    </script>
+    
+    <style>
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .success-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        
+        .success-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .success-header h1 {
+            color: var(--success);
+            margin-bottom: 0.5rem;
+        }
+        
+        .success-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        
+        .user-profile {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+        }
+        
+        .profile-info h2 {
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .profile-email {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .profile-details h3 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .detail-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .detail-value {
+            color: var(--text-primary);
+            font-family: 'Fira Code', monospace;
+        }
+        
+        .token-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .token-section h3 {
+            color: var(--warning);
+            margin-bottom: 1rem;
+        }
+        
+        .token-info {
+            background: var(--bg-code);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .token-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .token-row:last-child {
+            border-bottom: none;
+        }
+        
+        .token-label {
+            color: var(--text-secondary);
+            min-width: 120px;
+            font-size: 0.9rem;
+        }
+        
+        .token-value {
+            flex: 1;
+            color: var(--accent);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            word-break: break-all;
+        }
+        
+        .copy-btn {
+            background: var(--accent);
+            border: none;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            background: var(--accent-hover);
+        }
+        
+        .success-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        
+        .primary-btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: transform 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .primary-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .secondary-btn {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .secondary-btn:hover {
+            background: var(--bg-card);
+            border-color: var(--accent);
+        }
+        
+        .danger-btn {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .danger-btn:hover {
+            background: #c82333;
+        }
+        
+        .integration-info {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .integration-info h3 {
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .step-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .step-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .step-card h4 {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .step-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .api-examples {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+        
+        .api-examples h3 {
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .code-example {
+            margin-bottom: 2rem;
+        }
+        
+        .code-example h4 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .success-container {
+                padding: 1rem;
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .success-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .detail-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+            
+            .token-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </body>
 </html> 

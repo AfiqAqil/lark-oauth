@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 from contextlib import asynccontextmanager
 
 from app.api.router import router
@@ -45,6 +46,12 @@ def create_application() -> FastAPI:
     except RuntimeError:
         # Handle case when static directory doesn't exist
         logger.warning("Static directory not found, skipping static file mounting")
+
+    # Add root route to redirect to the guide
+    @app.get("/")
+    async def root():
+        """Redirect to the setup guide."""
+        return RedirectResponse(url="/static/index.html")
 
     return app
 

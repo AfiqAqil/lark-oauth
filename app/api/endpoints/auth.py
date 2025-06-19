@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Query
 from fastapi.responses import RedirectResponse
-import os
+from pydantic import BaseModel
 
 from app.core.config import settings
 from app.core.logger import logger
@@ -10,6 +10,10 @@ from app.services.lark_service import (
     create_or_update_user,
     refresh_access_token
 )
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
 
 router = APIRouter()
 
@@ -60,9 +64,8 @@ async def lark_callback(code: str = Query(...)):
         result = await create_or_update_user(user_info, token_data)
         
         # Redirect to frontend with success
-        # Check if we're using a separate frontend server
-        frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
-        redirect_url = f"{frontend_url}/login-success.html?userId={result['user']['id']}"
+        # Use the static files served by the same backend
+        redirect_url = f"/static/login-success.html?userId={result['user']['id']}"
         return RedirectResponse(url=redirect_url)
     except HTTPException:
         # Re-raise HTTP exceptions
@@ -76,10 +79,10 @@ async def lark_callback(code: str = Query(...)):
 
 
 @router.post("/lark/refresh")
-async def refresh_token(refresh_token: str):
+async def refresh_token(request: RefreshTokenRequest):
     """Refresh the access token using a refresh token."""
     try:
-        if not refresh_token:
+        if not request.refresh_token:
             logger.error("Missing refresh token")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -87,7 +90,7 @@ async def refresh_token(refresh_token: str):
             )
             
         # Refresh the token
-        token_data = await refresh_access_token(refresh_token)
+        token_data = await refresh_access_token(request.refresh_token)
         if not token_data or "access_token" not in token_data:
             logger.error("Failed to refresh token")
             raise HTTPException(
